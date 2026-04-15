@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-auction-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: online-auction-system
+  template:
+    metadata:
+      labels:
+        app: online-auction-system
+    spec:
+      containers:
+        - name: online-auction-system
+          image: YOUR_DOCKERHUB_USERNAME/online-auction-system:latest
+          ports:
+            - containerPort: 8080
