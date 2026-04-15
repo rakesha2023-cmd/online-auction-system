@@ -2,20 +2,24 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven'
-        jdk 'JDK17'
+        maven 'Maven3'
+        jdk 'JDK21'
+    }
+
+    environment {
+        IMAGE_NAME = 'YOUR_DOCKERHUB_USERNAME/online-auction-system:latest'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git 'https://github.com/rakesha2023-cmd/online-auction-system.git'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean compile'
+                bat 'mvn clean package'
             }
         }
 
@@ -25,32 +29,28 @@ pipeline {
             }
         }
 
-        stage('Package') {
-            steps {
-                bat 'mvn clean package'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t YOUR_DOCKERHUB_USERNAME/online-auction-system:latest .'
+                bat 'docker build -t %IMAGE_NAME% .'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
-                    bat 'docker push YOUR_DOCKERHUB_USERNAME/online-auction-system:latest'
-                }
+                echo 'Configure Docker Hub credentials before enabling this stage'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                bat 'kubectl apply -f k8s/deployment.yaml'
-                bat 'kubectl apply -f k8s/service.yaml'
+                echo 'Configure kubectl/minikube before enabling this stage'
             }
+        }
+    }
+
+    post {
+        always {
+            junit 'target/surefire-reports/*.xml'
         }
     }
 }
